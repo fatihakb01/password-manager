@@ -2,7 +2,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Email, InputRequired, EqualTo, Length
-from flask_ckeditor import CKEditorField
 
 
 # Create a RegisterForm to register new users.
@@ -20,7 +19,6 @@ class RegisterForm(FlaskForm):
         choices=[
             ('Chrome', 'Chrome'),
             ('Brave', 'Brave'),
-            ('Firefox', 'Firefox'),
             ('Microsoft Edge', 'Microsoft Edge'),
             ('All', 'All Browsers'),
             ('None', 'None')
