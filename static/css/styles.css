@@ -1,0 +1,5 @@
+.flash-message {
+    color: red; /* This will set the text color to red */
+    list-style: none; /* Optional: Remove bullet points */
+    padding-left: 0; /* Optional: Remove default padding for lists */
+}

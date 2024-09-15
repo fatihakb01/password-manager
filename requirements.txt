@@ -1,0 +1,21 @@
+# Flask and essential libraries
+Flask==2.3.2
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.1.1
+Werkzeug==3.0.3
+
+# Bootstrap integration for Flask
+Bootstrap-Flask==2.2.0
+
+# WTForms for form handling
+WTForms==3.0.1
+
+# PostgreSQL support (if needed, remove if using SQLite)
+psycopg2-binary==2.9.9
+
+# Environment variable handling
+python-dotenv~=1.0.1
+
+# For running Flask applications in production
+gunicorn==21.2.0

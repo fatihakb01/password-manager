@@ -1,0 +1,14 @@
+Slogan: Your safety is our security
+
+Modules:
+- main: Flask application.
+- step 1 = password_input
+- step 2 = password_checker: checking whether password has been breached and on which websites.
+- step 3 = show the vaults for the passwords that need to be reset.
+- step 4 = use the password_generator to change the password to a random password
+
+Benefits:
+- all data is stored locally, due to the nature of sql lite
+- we don't collect any data
+- you can create multiple accounts containing different username/password combinations
+
