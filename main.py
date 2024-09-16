@@ -69,14 +69,16 @@ class Account(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
     url: Mapped[str] = mapped_column(String(100))
+    full_url: Mapped[str] = mapped_column(String(100))
+    icon: Mapped[str] = mapped_column(String(100), nullable=True)
     username: Mapped[str] = mapped_column(String(100))
     password: Mapped[str] = mapped_column(String(100))
     date_created: Mapped[int] = mapped_column(Integer, nullable=False)
     date_last_used: Mapped[int] = mapped_column(Integer, nullable=False)
     date_password_modified: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    # Enforce unique combination of user_id, url, and username
-    __table_args__ = (UniqueConstraint('user_id', 'url', 'username', name='unique_user_url_username'),)
+    # Enforce unique combination of user_id, full_url, and username
+    __table_args__ = (UniqueConstraint('user_id', 'full_url', 'username', name='unique_user_url_username'),)
 
     # Connect accounts with users table
     parent_user = relationship("User", back_populates="accounts")
@@ -120,10 +122,11 @@ def home():
 
 
 # Go to the home page.
-@app.route('/test')
-def test():
-    # return "Hello world"
-    return render_template("test.html", current_user=current_user)
+@app.route('/vaults')
+def vaults():
+    result = db.session.execute(db.select(Account))
+    accounts = result.scalars().all()
+    return render_template("vaults.html", current_user=current_user, accounts=accounts)
 
 
 # Register a new user account and redirect the user to the
@@ -169,7 +172,7 @@ def register():
             if selected_browser == "All Browsers":
                 password_input.import_all_browsers()
             else:
-                password_input.import_password()
+                password_input.import_browser()
             password_input.insert_data()
 
         # Can redirect() and get name from the current_user.

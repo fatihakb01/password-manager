@@ -2,13 +2,33 @@ import sqlite3
 import shutil
 import os
 import tempfile
+import requests
 from flask_login import current_user
+
+
+def get_clearbit_logo(url):
+    try:
+        # Extract base domain from URL
+        base_url = url.split('/')[2]
+        logo_url = f"https://logo.clearbit.com/{base_url}"
+
+        # Check if the logo URL is accessible
+        response = requests.get(logo_url)
+        if response.status_code == 200:
+            return logo_url
+        else:
+            return None
+    except Exception as e:
+        print(f"Error retrieving logo for {url}: {e}")
+        return None
 
 
 class PasswordInput:
     def __init__(self, browser):
         self.browser = browser
         self.origin_urls = []
+        self.urls = []
+        self.icons = []
         self.usernames = []
         self.passwords = []
         self.creation_dates = []
@@ -20,10 +40,10 @@ class PasswordInput:
         """Import data from all browsers."""
         for browser in ['Chrome', 'Brave', 'Edge']:
             self.browser = browser
-            self.import_password()
+            self.import_browser()
             self.insert_data()
 
-    def import_password(self):
+    def import_browser(self):
         """Import the data from your Chrome browser"""
         try:
             db_path = None
@@ -53,17 +73,18 @@ class PasswordInput:
                     cursor = conn.cursor()
 
                     # Find the data and put them in the lists
-                    query = ("SELECT origin_url, username_value, password_value, "
+                    query = ("SELECT origin_url, signon_realm, username_value, password_value, "
                              "date_created, date_last_used, date_password_modified "
                              "FROM logins")
                     cursor.execute(query)
                     rows = cursor.fetchall()
                     self.origin_urls = [row[0] for row in rows]
-                    self.usernames = [row[1] for row in rows]
-                    self.passwords = [row[2] for row in rows]
-                    self.creation_dates = [row[3] for row in rows]
-                    self.last_used_dates = [row[4] for row in rows]
-                    self.password_modified_dates = [row[5] for row in rows]
+                    self.urls = [row[1] for row in rows]
+                    self.usernames = [row[2] for row in rows]
+                    self.passwords = [row[3] for row in rows]
+                    self.creation_dates = [row[4] for row in rows]
+                    self.last_used_dates = [row[5] for row in rows]
+                    self.password_modified_dates = [row[6] for row in rows]
                     self.data = rows
 
                     conn.close()
@@ -85,11 +106,15 @@ class PasswordInput:
 
             # # Insert each row of browser data into the accounts table, avoiding duplicates
             for row in self.data:
-                origin_url, username_value, password_value, date_created, date_last_used, date_modified_password = row
+                (origin_url, signon_realm, username_value, password_value,
+                 date_created, date_last_used, date_modified_password) = row
+
+                # Fetch the icon for the URL
+                icon_url = get_clearbit_logo(origin_url)
 
                 # Check if the combination of user_id, url, and username already exists
                 cursor.execute(
-                    ("SELECT 1 FROM accounts WHERE user_id = ? AND url = ? AND username = ?"),
+                    "SELECT 1 FROM accounts WHERE user_id = ? AND full_url = ? AND username = ?",
                     (user_id, origin_url, username_value)
                 )
 
@@ -97,10 +122,10 @@ class PasswordInput:
                 if result is None:
                     # Only insert the new record if it doesn't exist
                     cursor.execute(
-                        ("INSERT INTO accounts (user_id, url, username, password, "
+                        ("INSERT INTO accounts (user_id, full_url, url, icon, username, password, "
                          "date_created, date_last_used, date_password_modified) "
-                         "VALUES (?, ?, ?, ?, ?, ?, ?)"),
-                        (user_id, origin_url, username_value, password_value,
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+                        (user_id, origin_url, signon_realm, icon_url, username_value, password_value,
                          date_created, date_last_used, date_modified_password)
                     )
 

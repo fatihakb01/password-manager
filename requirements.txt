@@ -5,6 +5,7 @@ Flask-Login==0.6.3
 Flask-WTF==1.2.1
 Werkzeug==3.0.4
 MarkupSafe==2.1.5
+favicon==0.7.0
 
 
 
