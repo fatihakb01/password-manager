@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap5
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text, ForeignKey
+from sqlalchemy import Integer, String, Text, ForeignKey, UniqueConstraint
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegisterForm, LoginForm
@@ -51,16 +51,20 @@ db.init_app(app)
 # Create a users table for all registered users.
 # Implement the default Flask-login (UserMixin).
 class User(UserMixin, db.Model):
+    # Define table name and columns
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(100))
+
+    # Connect users with accounts table
     accounts = relationship("Account", back_populates="parent_user")
 
 
 # Create an accounts table for all accounts that belong to the user.
 class Account(db.Model):
+    # Define table name and columns
     __tablename__ = "accounts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
@@ -70,6 +74,11 @@ class Account(db.Model):
     date_created: Mapped[int] = mapped_column(Integer, nullable=False)
     date_last_used: Mapped[int] = mapped_column(Integer, nullable=False)
     date_password_modified: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Enforce unique combination of user_id, url, and username
+    __table_args__ = (UniqueConstraint('user_id', 'url', 'username', name='unique_user_url_username'),)
+
+    # Connect accounts with users table
     parent_user = relationship("User", back_populates="accounts")
 
 
@@ -157,7 +166,10 @@ def register():
 
         # Import the password from the browser and insert it into the accounts table
         if app.config['SQLALCHEMY_DATABASE_URI']:
-            password_input.import_password()
+            if selected_browser == "All Browsers":
+                password_input.import_all_browsers()
+            else:
+                password_input.import_password()
             password_input.insert_data()
 
         # Can redirect() and get name from the current_user.

@@ -1,6 +1,6 @@
 # Import libraries.
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, SelectField
+from wtforms.fields import StringField, SubmitField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Email, InputRequired, EqualTo, Length
 
 
@@ -20,7 +20,7 @@ class RegisterForm(FlaskForm):
             ('Chrome', 'Chrome'),
             ('Brave', 'Brave'),
             ('Microsoft Edge', 'Microsoft Edge'),
-            ('All', 'All Browsers'),
+            ('All Browsers', 'All Browsers'),
             ('None', 'None')
         ],
         validators=[DataRequired()]

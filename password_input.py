@@ -16,6 +16,13 @@ class PasswordInput:
         self.password_modified_dates = []
         self.data = []
 
+    def import_all_browsers(self):
+        """Import data from all browsers."""
+        for browser in ['Chrome', 'Brave', 'Edge']:
+            self.browser = browser
+            self.import_password()
+            self.insert_data()
+
     def import_password(self):
         """Import the data from your Chrome browser"""
         try:
@@ -76,16 +83,26 @@ class PasswordInput:
             # Ensure that user_id is set correctly
             user_id = current_user.id
 
-            # Insert each row of browser data into the accounts table
+            # # Insert each row of browser data into the accounts table, avoiding duplicates
             for row in self.data:
                 origin_url, username_value, password_value, date_created, date_last_used, date_modified_password = row
+
+                # Check if the combination of user_id, url, and username already exists
                 cursor.execute(
-                    ("INSERT INTO accounts (user_id, url, username, password, "
-                     "date_created, date_last_used, date_password_modified) "
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)"),
-                    (user_id, origin_url, username_value, password_value,
-                     date_created, date_last_used, date_modified_password)
+                    ("SELECT 1 FROM accounts WHERE user_id = ? AND url = ? AND username = ?"),
+                    (user_id, origin_url, username_value)
                 )
+
+                result = cursor.fetchone()
+                if result is None:
+                    # Only insert the new record if it doesn't exist
+                    cursor.execute(
+                        ("INSERT INTO accounts (user_id, url, username, password, "
+                         "date_created, date_last_used, date_password_modified) "
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)"),
+                        (user_id, origin_url, username_value, password_value,
+                         date_created, date_last_used, date_modified_password)
+                    )
 
             # Save the changes and close connection
             conn.commit()
