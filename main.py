@@ -121,12 +121,19 @@ def home():
     return render_template("index.html", current_user=current_user)
 
 
-# Go to the home page.
+# Show all the vaults
 @app.route('/vaults')
-def vaults():
+def all_vaults():
     result = db.session.execute(db.select(Account))
     accounts = result.scalars().all()
-    return render_template("vaults.html", current_user=current_user, accounts=accounts)
+    return render_template("all_vaults.html", current_user=current_user, accounts=accounts)
+
+
+# Show a specific vault
+@app.route('/vaults/<int:account_id>', methods=["GET", "POST"])
+def show_vault(account_id):
+    accounts = db.get_or_404(Account, account_id)
+    return render_template("show_vault.html", current_user=current_user, accounts=accounts)
 
 
 # Register a new user account and redirect the user to the
@@ -176,7 +183,7 @@ def register():
             password_input.insert_data()
 
         # Can redirect() and get name from the current_user.
-        return redirect(url_for("home"))
+        return redirect(url_for("all_vaults"))
 
     # Passing True or False if the user is authenticated.
     return render_template("register.html", current_user=current_user, form=form)
@@ -203,7 +210,7 @@ def login():
             return redirect(url_for('login'))
         else:
             login_user(user)
-            return redirect(url_for('home'))
+            return redirect(url_for('all_vaults'))
     return render_template("login.html", form=form, current_user=current_user)
 
 

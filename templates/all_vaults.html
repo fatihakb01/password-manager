@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}My Accounts{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="heading">My Accounts</h1>
+  <p class="description">These are the accounts you have saved.</p>
+
+  <!-- Flexbox container to center cards and distribute evenly -->
+  <div class="d-flex flex-wrap justify-content-center">
+    {% for account in accounts %}
+      <!-- Each card is wrapped in a clickable anchor tag -->
+      <a href="{{ url_for('show_vault', account_id=account.id) }}" class="text-decoration-none">
+        <!-- Card with fixed size, margin for spacing -->
+        <div class="card mb-4 mx-3" style="width: 300px; height: 400px;">
+          <!-- Display the icon in the front of the card -->
+          <div class="front" style="background-image: url({{ account.icon }}); height: 400px; background-size: cover;">
+          </div>
+          <!-- Card content with URL, username, and masked password -->
+          <div class="back">
+            <div class="title">{{ account.url }}</div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container text-center add">
+  <a href="#" class="button">Add Account</a>
+</div>
+{% endblock %}

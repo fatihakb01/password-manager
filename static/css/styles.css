@@ -219,3 +219,35 @@
 	 font-weight: normal;
 }
 
+.back .title{
+  margin: 10px 0;
+  display: block; /* Ensures they take up their own line */
+  color: black;
+}
+
+/* Optional: Give each card a shadow and slight hover effect */
+.card {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  text-align: left; /* Align text to the left for clarity */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.front {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.d-flex {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+
+

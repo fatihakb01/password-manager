@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="heading text-center">Account Details</h1>
+  
+  <!-- Account details overview -->
+  <div class="card mx-auto" style="width: 400px;">
+    <div class="card-body">
+      <!-- URL -->
+      <div class="mb-3">
+        <strong>URL:</strong>
+        <p>{{ accounts.url }}</p>
+      </div>
+
+      <!-- Username -->
+      <div class="mb-3">
+        <strong>Username:</strong>
+        <p>{{ accounts.username }}</p>
+      </div>
+
+<!--      &lt;!&ndash; Password (unmasked) &ndash;&gt;-->
+<!--      <div class="mb-3">-->
+<!--        <strong>Password:</strong>-->
+<!--        <p>{{ accounts.password }}</p> &lt;!&ndash; You can mask this later if needed &ndash;&gt;-->
+<!--      </div>-->
+
+      <!-- Password (masked) -->
+      <div class="mb-3">
+        <strong>Password:</strong>
+        <span class="masked-password">••••••••</span>
+      </div>
+
+      <!-- Edit Button (not functional yet) -->
+      <div class="text-center">
+        <a href="#" class="btn btn-primary">Edit</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to all vaults -->
+  <div class="text-center mt-4">
+    <a href="{{ url_for('all_vaults') }}" class="btn btn-secondary">Back to All Vaults</a>
+  </div>
+</div>
+{% endblock %}
