@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="heading text-center">Edit Account</h1>
+  
+  <!-- Form to edit account details -->
+  <div class="card mx-auto" style="width: 400px;">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('edit_vault', account_id=account.id) }}">
+        {{ form.hidden_tag() }}  <!-- CSRF protection -->
+
+        <!-- URL -->
+        <div class="form-group mb-3">
+          <strong>{{ form.url.label(class="form-label") }}</strong>
+          {{ form.url(class="form-control") }}
+        </div>
+
+        <!-- Username -->
+        <div class="form-group mb-3">
+          <strong>{{ form.username.label(class="form-label") }}</strong>
+          {{ form.username(class="form-control") }}
+        </div>
+
+        <!-- Password field with hide/unhide functionality -->
+        <div class="form-group mb-3">
+          <strong>{{ form.password.label(class="form-label") }}</strong>
+          <div class="input-group">
+            {{ form.password(class="form-control", id="passwordInput") }}
+            <span class="input-group-text" id="togglePassword">
+              <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
+            </span>
+          </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="text-center">
+          {{ form.submit(class="btn btn-primary") }}
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Back to account details -->
+  <div class="text-center mt-4">
+    <a href="{{ url_for('show_vault', account_id=account.id) }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</div>
+
+<script>
+  document.getElementById("togglePassword").addEventListener("click", function () {
+    var passwordInput = document.getElementById("passwordInput");
+    var icon = document.getElementById("toggleIcon");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Replace hide icon with show icon
+    } else {
+      passwordInput.type = "password";
+      icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Replace show icon with hide icon
+    }
+  });
+</script>
+
+{% endblock %}

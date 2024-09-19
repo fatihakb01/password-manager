@@ -11,31 +11,44 @@
     <div class="card-body">
       <!-- URL -->
       <div class="mb-3">
-        <strong>URL:</strong>
+        <strong>URL</strong>
         <p>{{ accounts.url }}</p>
       </div>
 
       <!-- Username -->
       <div class="mb-3">
-        <strong>Username:</strong>
+        <strong>Username</strong>
         <p>{{ accounts.username }}</p>
       </div>
 
-<!--      &lt;!&ndash; Password (unmasked) &ndash;&gt;-->
-<!--      <div class="mb-3">-->
-<!--        <strong>Password:</strong>-->
-<!--        <p>{{ accounts.password }}</p> &lt;!&ndash; You can mask this later if needed &ndash;&gt;-->
-<!--      </div>-->
-
-      <!-- Password (masked) -->
+      <!-- Password (masked) with toggle button -->
       <div class="mb-3">
-        <strong>Password:</strong>
-        <span class="masked-password">••••••••</span>
+        <strong>Password</strong>
+        <p>
+          <span id="maskedPassword">••••••••</span>
+          <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="togglePasswordView">
+        </p>
       </div>
 
-      <!-- Edit Button (not functional yet) -->
+      <!-- Script to toggle password visibility -->
+      <script>
+        document.getElementById("togglePasswordView").addEventListener("click", function () {
+          var passwordText = document.getElementById("maskedPassword");
+          var icon = document.getElementById("togglePasswordView");
+
+          if (passwordText.innerText === "••••••••") {
+            passwordText.innerText = "{{ accounts.password }}";  // Unmask the password
+            icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
+          } else {
+            passwordText.innerText = "••••••••";  // Mask the password
+            icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change to hide icon
+          }
+        });
+      </script>
+
+      <!-- Edit Button (now links to the edit form) -->
       <div class="text-center">
-        <a href="#" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('edit_vault', account_id=accounts.id) }}" class="btn btn-primary">Edit</a>
       </div>
     </div>
   </div>

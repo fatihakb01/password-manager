@@ -36,6 +36,19 @@
   <body>
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+      <!-- Flash messages block, typically placed right under the navbar or header -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="container mt-4">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
       <div class="container px-4 px-lg-5">
         <button
           class="navbar-toggler"

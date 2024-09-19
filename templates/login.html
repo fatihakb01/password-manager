@@ -1,6 +1,6 @@
 {% from "bootstrap5/form.html" import render_form %}
-{% block content %} {%
-include "header.html" %}
+{% block content %}
+{%include "base.html" %}
 
 <!-- Page Header -->
 <header
@@ -14,16 +14,6 @@ include "header.html" %}
         <div class="page-heading">
           <h1>Log In</h1>
           <span class="subheading">Welcome Back!</span>
-          <!-- Add a flash message here for users registering twice -->
-          {% with messages = get_flashed_messages() %}
-            {% if messages %}
-              <ul class="flash-message">
-                {% for message in messages %}
-                  <li>{{ message }}</li>
-                    {% endfor %}
-              </ul>
-            {% endif %}
-          {% endwith %}
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text, ForeignKey, UniqueConstraint
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import RegisterForm, LoginForm
+from forms import RegisterForm, LoginForm, EditVaultForm
 from password_input import PasswordInput
 from dotenv import load_dotenv
 
@@ -134,6 +134,27 @@ def all_vaults():
 def show_vault(account_id):
     accounts = db.get_or_404(Account, account_id)
     return render_template("show_vault.html", current_user=current_user, accounts=accounts)
+
+
+# Edit the specific vault
+@app.route('/vaults/<int:account_id>/edit', methods=["GET", "POST"])
+def edit_vault(account_id):
+    account = db.get_or_404(Account, account_id)
+    form = EditVaultForm(obj=account)  # Prefill the form with the current account data
+
+    if form.validate_on_submit():  # If the form is submitted and valid
+        # Update the account with form data
+        account.url = form.url.data
+        account.username = form.username.data
+        account.password = form.password.data
+
+        # Save changes to the database
+        db.session.commit()
+
+        flash('Account updated successfully!', 'success')
+        return redirect(url_for('show_vault', account_id=account.id))  # Redirect to the account details page
+
+    return render_template("edit_vault.html", form=form, account=account)
 
 
 # Register a new user account and redirect the user to the
