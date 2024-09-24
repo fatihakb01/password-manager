@@ -18,9 +18,7 @@ class RegisterForm(FlaskForm):
         "From which browser would you like to import your passwords?",
         choices=[
             ('Chrome', 'Chrome'),
-            ('Brave', 'Brave'),
             ('Microsoft Edge', 'Microsoft Edge'),
-            ('All Browsers', 'All Browsers'),
             ('None', 'None')
         ],
         validators=[DataRequired()]

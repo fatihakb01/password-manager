@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="heading text-center">Edit Account</h1>
-  
+
   <!-- Form to edit account details -->
   <div class="card mx-auto" style="width: 400px;">
     <div class="card-body">
@@ -28,7 +28,8 @@
         <div class="form-group mb-3">
           <strong>{{ form.password.label(class="form-label") }}</strong>
           <div class="input-group">
-            {{ form.password(class="form-control", id="passwordInput") }}
+            <!-- Manually prefill the decrypted password -->
+            {{ form.password(class="form-control", id="passwordInput", placeholder="Enter your password") }}
             <span class="input-group-text" id="togglePassword">
               <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
             </span>
@@ -50,16 +51,19 @@
 </div>
 
 <script>
+  var isPasswordVisible = false;  // Track whether the password is visible or not
+
+  // Handle password visibility toggle
   document.getElementById("togglePassword").addEventListener("click", function () {
     var passwordInput = document.getElementById("passwordInput");
     var icon = document.getElementById("toggleIcon");
 
     if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Replace hide icon with show icon
+      passwordInput.type = "text";  // Show the password as plain text
+      icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
     } else {
-      passwordInput.type = "password";
-      icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Replace show icon with hide icon
+      passwordInput.type = "password";  // Mask the password again
+      icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
     }
   });
 </script>

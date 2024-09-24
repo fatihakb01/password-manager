@@ -4,6 +4,13 @@ import os
 import tempfile
 import requests
 from flask_login import current_user
+from dotenv import load_dotenv
+import base64
+import json
+import win32crypt
+
+# Load environment variables in here
+load_dotenv()
 
 
 def get_clearbit_logo(url):
@@ -36,15 +43,42 @@ class PasswordInput:
         self.password_modified_dates = []
         self.data = []
 
-    def import_all_browsers(self):
-        """Import data from all browsers."""
-        for browser in ['Chrome', 'Brave', 'Edge']:
-            self.browser = browser
-            self.import_browser()
-            self.insert_data()
+    def get_decrypted_aes_key(self):
+        """Extract and decrypt the AES key from the Local State file."""
+        try:
+            # Set the local state path based on the browser
+            local_state_path = None
+
+            if self.browser == "None":
+                return None
+            elif self.browser == "Chrome":
+                local_state_path = os.getenv('CHROME_LOCAL_STATE_PATH')
+            elif self.browser == "Microsoft Edge":
+                local_state_path = os.getenv('EDGE_LOCAL_STATE_PATH')
+
+            if local_state_path:
+                # Open and load the Local State file to retrieve the encrypted key
+                with open(local_state_path, "r", encoding="utf-8") as file:
+                    local_state = json.load(file)
+
+                # Base64 decode the encrypted AES key
+                encrypted_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+
+                # Remove 'DPAPI' prefix from the encrypted key (first 5 bytes)
+                encrypted_key = encrypted_key[5:]
+
+                # Use CryptUnprotectData to decrypt the AES key
+                decrypted_key = win32crypt.CryptUnprotectData(encrypted_key, None, None, None, 0)[1]
+                return decrypted_key
+            else:
+                return None
+
+        except Exception as e:
+            print(f"Error decrypting AES key: {e}")
+            return None
 
     def import_browser(self):
-        """Import the data from your Chrome browser"""
+        """Import the data from the specified browser and retrieve the encrypted key."""
         try:
             db_path = None
 
@@ -52,12 +86,9 @@ class PasswordInput:
             if self.browser == "None":
                 pass
             elif self.browser == "Chrome":
-                db_path = "C:\\Users\\Fatih\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data"
-            elif self.browser == "Brave":
-                db_path = ("C:\\Users\\Fatih\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Login "
-                           "Data")
-            elif self.browser == "Edge":
-                db_path = "C:\\Users\\Fatih\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Login Data"
+                db_path = os.getenv('CHROME_DB_PATH')
+            elif self.browser == "Microsoft Edge":
+                db_path = os.getenv('EDGE_DB_PATH')
 
             # Only proceed if a valid path was set
             if db_path:
@@ -89,6 +120,18 @@ class PasswordInput:
 
                     conn.close()
 
+            # After fetching passwords, get the decrypted AES key and store it in the users table
+            decrypted_key = self.get_decrypted_aes_key()
+            if decrypted_key:
+                # Insert the decrypted key into the current user record
+                db_path = os.getenv("DB_PATH")
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+
+                cursor.execute("UPDATE users SET encrypted_key = ? WHERE id = ?", (decrypted_key, current_user.id))
+                conn.commit()
+                conn.close()
+
         except PermissionError as e:
             print(f"Permission denied: {e.filename} - {e.strerror}")
         except Exception as e:
@@ -97,20 +140,21 @@ class PasswordInput:
     def insert_data(self):
         """Insert the browser data in the accounts table after registration."""
         try:
-            db_path = "./instance/pwmanager.db"
+            db_path = os.getenv("DB_PATH")
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
             # Ensure that user_id is set correctly
             user_id = current_user.id
 
-            # # Insert each row of browser data into the accounts table, avoiding duplicates
+            # Insert each row of browser data into the accounts table, avoiding duplicates
             for row in self.data:
                 (origin_url, signon_realm, username_value, password_value,
                  date_created, date_last_used, date_modified_password) = row
 
-                # Fetch the icon for the URL
+                # Fetch the icon for the URL and retrieve browser
                 icon_url = get_clearbit_logo(origin_url)
+                browser = self.browser
 
                 # Check if the combination of user_id, url, and username already exists
                 cursor.execute(
@@ -123,10 +167,10 @@ class PasswordInput:
                     # Only insert the new record if it doesn't exist
                     cursor.execute(
                         ("INSERT INTO accounts (user_id, full_url, url, icon, username, password, "
-                         "date_created, date_last_used, date_password_modified) "
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+                         "browser, date_created, date_last_used, date_password_modified) "
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
                         (user_id, origin_url, signon_realm, icon_url, username_value, password_value,
-                         date_created, date_last_used, date_modified_password)
+                         browser, date_created, date_last_used, date_modified_password)
                     )
 
             # Save the changes and close connection
@@ -134,3 +178,11 @@ class PasswordInput:
             conn.close()
         except Exception as e:
             print({e})
+
+# For debug purposes
+# password_input = PasswordInput("Chrome")
+# password_input.import_browser()
+# password_input.get_decrypted_aes_key()
+# print(password_input.passwords)
+# print(password_input.browser)
+# print(password_input.get_decrypted_aes_key())

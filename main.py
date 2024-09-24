@@ -11,6 +11,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegisterForm, LoginForm, EditVaultForm
 from password_input import PasswordInput
+from password_functions import PasswordManager
 from dotenv import load_dotenv
 
 '''
@@ -57,6 +58,7 @@ class User(UserMixin, db.Model):
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(100))
+    encrypted_key: Mapped[bytes] = mapped_column(db.LargeBinary, nullable=True)
 
     # Connect users with accounts table
     accounts = relationship("Account", back_populates="parent_user")
@@ -72,7 +74,8 @@ class Account(db.Model):
     full_url: Mapped[str] = mapped_column(String(100))
     icon: Mapped[str] = mapped_column(String(100), nullable=True)
     username: Mapped[str] = mapped_column(String(100))
-    password: Mapped[str] = mapped_column(String(100))
+    password: Mapped[str] = mapped_column(db.LargeBinary)
+    browser: Mapped[str] = mapped_column(String(100))
     date_created: Mapped[int] = mapped_column(Integer, nullable=False)
     date_last_used: Mapped[int] = mapped_column(Integer, nullable=False)
     date_password_modified: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -132,29 +135,56 @@ def all_vaults():
 # Show a specific vault
 @app.route('/vaults/<int:account_id>', methods=["GET", "POST"])
 def show_vault(account_id):
-    accounts = db.get_or_404(Account, account_id)
-    return render_template("show_vault.html", current_user=current_user, accounts=accounts)
+    account = db.get_or_404(Account, account_id)
+    manager = PasswordManager(account.browser)
+
+    try:
+        # Decrypt the password stored as a BLOB
+        decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
+    except Exception as e:
+        flash(f"Error decrypting password: {e}", "danger")
+        decrypted_password = None
+
+    return render_template("show_vault.html", current_user=current_user,
+                           account=account, decrypted_password=decrypted_password)
 
 
 # Edit the specific vault
 @app.route('/vaults/<int:account_id>/edit', methods=["GET", "POST"])
 def edit_vault(account_id):
     account = db.get_or_404(Account, account_id)
-    form = EditVaultForm(obj=account)  # Prefill the form with the current account data
+    manager = PasswordManager(account.browser)
 
-    if form.validate_on_submit():  # If the form is submitted and valid
+    # Decrypt the password to show in the form
+    try:
+        decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
+    except Exception as e:
+        flash(f"Error decrypting password: {e}", "danger")
+        decrypted_password = ''  # Default to empty if decryption fails
+
+    # Prefill the form with account data but DO NOT prefill password directly
+    form = EditVaultForm(obj=account)
+
+    if form.validate_on_submit():
         # Update the account with form data
         account.url = form.url.data
         account.username = form.username.data
-        account.password = form.password.data
+
+        # Encrypt the new password before saving it
+        account.password = manager.encrypt_and_store_password(form.password.data)
+
+        # # Debugging output
+        # print(f"Updated password: {form.password.data}")
+        # print(f"Updated encrypted password: {account.password}")
 
         # Save changes to the database
         db.session.commit()
 
         flash('Account updated successfully!', 'success')
-        return redirect(url_for('show_vault', account_id=account.id))  # Redirect to the account details page
+        return redirect(url_for('show_vault', account_id=account.id))  # Redirect to account details page
 
-    return render_template("edit_vault.html", form=form, account=account)
+    return render_template("edit_vault.html", form=form, account=account,
+                           decrypted_password=decrypted_password)
 
 
 # Register a new user account and redirect the user to the
@@ -256,4 +286,4 @@ def contact():
 
 # Run Flask application with debug mode turned on.
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
