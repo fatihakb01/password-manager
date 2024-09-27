@@ -7,11 +7,23 @@
   <h1 class="heading">My Accounts</h1>
   <p class="description">These are the accounts you have saved.</p>
 
+  <!-- Buttons to switch between actions -->
+  <div class="d-flex justify-content-center mb-4">
+    <!-- Button for all vaults -->
+    <a href="{{ url_for('all_vaults') }}" class="btn btn-primary mx-2">All Vaults</a>
+
+    <!-- Button for breached vaults (no checking, just display) -->
+    <a href="{{ url_for('breached_vaults') }}" class="btn btn-danger mx-2">Breached Vaults</a>
+
+    <!-- Button to check for breaches and update the vaults -->
+    <a href="{{ url_for('check_breaches') }}" class="btn btn-warning mx-2">Check Breached Vaults</a>
+  </div>
+
   <!-- Flexbox container to center cards and distribute evenly -->
   <div class="d-flex flex-wrap justify-content-center">
     {% for account in accounts %}
       <!-- Each card is wrapped in a clickable anchor tag -->
-      <a href="{{ url_for('show_vault', account_id=account.id) }}" class="text-decoration-none">
+      <a href="{{ url_for('show_vault', account_id=account.id, ref=referrer) }}" class="text-decoration-none">
         <!-- Card with fixed size, margin for spacing -->
         <div class="card mb-4 mx-3" style="width: 300px; height: 400px;">
           <!-- Display the icon in the front of the card -->
@@ -27,6 +39,7 @@
   </div>
 </div>
 
+<!-- Add Account Button -->
 <div class="container text-center add">
   <a href="#" class="button">Add Account</a>
 </div>

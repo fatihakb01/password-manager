@@ -16,20 +16,22 @@ class PasswordManager:
         :param browser: str - Name of the browser (chrome, brave, edge)
         """
         self.browser = browser
+        password_input = PasswordInput(self.browser)
+        self.decrypted_key = password_input.get_decrypted_aes_key()
 
     def return_aes_key(self):
         password_input = PasswordInput(self.browser)
         decrypted_key = password_input.get_decrypted_aes_key()
         return decrypted_key
 
-    def encrypt_password(self, plain_password, decrypted_key):
+    def encrypt_password(self, plain_password):
         """ Encrypt a plain password using AES-GCM.
         :param plain_password: str - The password in plain text.
         :return: bytes - The encrypted password.
         """
         nonce = os.urandom(12)
 
-        cipher = Cipher(algorithms.AES(decrypted_key), modes.GCM(nonce), backend=default_backend())
+        cipher = Cipher(algorithms.AES(self.decrypted_key), modes.GCM(nonce), backend=default_backend())
         encryptor = cipher.encryptor()
 
         ciphertext = encryptor.update(plain_password.encode('utf-8')) + encryptor.finalize()
@@ -37,7 +39,7 @@ class PasswordManager:
         encrypted_password = b'v10' + nonce + ciphertext + encryptor.tag
         return encrypted_password
 
-    def decrypt_password(self, encrypted_password, decrypted_key):
+    def decrypt_password(self, encrypted_password):
         """ Decrypt an encrypted password using AES-GCM.
         :param encrypted_password: bytes - The encrypted password blob from the database.
         :return: str - The decrypted password in plain text.
@@ -47,7 +49,7 @@ class PasswordManager:
             ciphertext = encrypted_password[15:-16]
             tag = encrypted_password[-16:]
 
-            cipher = Cipher(algorithms.AES(decrypted_key), modes.GCM(nonce, tag), backend=default_backend())
+            cipher = Cipher(algorithms.AES(self.decrypted_key), modes.GCM(nonce, tag), backend=default_backend())
             decryptor = cipher.decryptor()
             decrypted_password = decryptor.update(ciphertext) + decryptor.finalize()
 
@@ -71,8 +73,7 @@ class PasswordManager:
         encrypted_password_blob = cursor.fetchone()[0]
         conn.close()
 
-        decrypted_key = self.return_aes_key()
-        decrypted_password = self.decrypt_password(encrypted_password_blob, decrypted_key)
+        decrypted_password = self.decrypt_password(encrypted_password_blob)
         return decrypted_password
 
     def encrypt_and_store_password(self, plain_password):
@@ -80,8 +81,7 @@ class PasswordManager:
         :param plain_password: str - The password in plain text.
         :return: bytes - The encrypted password blob.
         """
-        decrypted_key = self.return_aes_key()
-        encrypted_password = self.encrypt_password(plain_password, decrypted_key)
+        encrypted_password = self.encrypt_password(plain_password)
         return encrypted_password
 
 

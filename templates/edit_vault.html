@@ -12,26 +12,38 @@
       <form method="POST" action="{{ url_for('edit_vault', account_id=account.id) }}">
         {{ form.hidden_tag() }}  <!-- CSRF protection -->
 
-        <!-- URL -->
+        <!-- URL Field with copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.url.label(class="form-label") }}</strong>
-          {{ form.url(class="form-control") }}
+          <div class="input-group">
+            {{ form.url(class="form-control", id="urlInput") }}
+            <span class="input-group-text copy-btn" id="copyUrl" data-copy-target="urlInput">
+              <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
+            </span>
+          </div>
         </div>
 
-        <!-- Username -->
+        <!-- Username Field with copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.username.label(class="form-label") }}</strong>
-          {{ form.username(class="form-control") }}
+          <div class="input-group">
+            {{ form.username(class="form-control", id="usernameInput") }}
+            <span class="input-group-text copy-btn" id="copyUsername" data-copy-target="usernameInput">
+              <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
+            </span>
+          </div>
         </div>
 
-        <!-- Password field with hide/unhide functionality -->
+        <!-- Password Field with hide/unhide and copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.password.label(class="form-label") }}</strong>
           <div class="input-group">
-            <!-- Manually prefill the decrypted password -->
             {{ form.password(class="form-control", id="passwordInput", placeholder="Enter your password") }}
             <span class="input-group-text" id="togglePassword">
               <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
+            </span>
+            <span class="input-group-text copy-btn" id="copyPassword" data-copy-target="passwordInput">
+              <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
             </span>
           </div>
         </div>
@@ -51,8 +63,6 @@
 </div>
 
 <script>
-  var isPasswordVisible = false;  // Track whether the password is visible or not
-
   // Handle password visibility toggle
   document.getElementById("togglePassword").addEventListener("click", function () {
     var passwordInput = document.getElementById("passwordInput");
@@ -65,6 +75,27 @@
       passwordInput.type = "password";  // Mask the password again
       icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
     }
+  });
+
+  // Function to copy text to clipboard using modern clipboard API
+  function copyToClipboard(targetId) {
+    var input = document.getElementById(targetId);
+    var valueToCopy = input.value;  // Get the value to copy
+
+    // Use the clipboard API to copy text
+    navigator.clipboard.writeText(valueToCopy).then(function() {
+      alert("Copied");
+    }).catch(function(error) {
+      console.error("Failed to copy text: ", error);  // Handle any errors
+    });
+  }
+
+  // Add click event listeners to all copy buttons
+  document.querySelectorAll('.copy-btn').forEach(function(copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var targetId = copyBtn.getAttribute('data-copy-target');
+      copyToClipboard(targetId);
+    });
   });
 </script>
 

@@ -9,42 +9,42 @@
   <!-- Account details overview -->
   <div class="card mx-auto" style="width: 400px;">
     <div class="card-body">
-      <!-- URL -->
-      <div class="mb-3">
+      <!-- URL Field with copy button -->
+      <div class="form-group mb-3">
         <strong>URL</strong>
-        <p>{{ account.url }}</p>
+        <div class="input-group">
+          <input type="text" class="form-control" id="urlInput" value="{{ account.url }}" readonly>
+          <span class="input-group-text copy-btn" data-copy-target="urlInput">
+            <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
+          </span>
+        </div>
       </div>
 
-      <!-- Username -->
-      <div class="mb-3">
+      <!-- Username Field with copy button -->
+      <div class="form-group mb-3">
         <strong>Username</strong>
-        <p>{{ account.username }}</p>
+        <div class="input-group">
+          <input type="text" class="form-control" id="usernameInput" value="{{ account.username }}" readonly>
+          <span class="input-group-text copy-btn" data-copy-target="usernameInput">
+            <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
+          </span>
+        </div>
       </div>
 
-      <!-- Password (masked) with toggle button -->
-      <div class="mb-3">
+      <!-- Password Field with hide/unhide and copy button -->
+      <div class="form-group mb-3">
         <strong>Password</strong>
-        <p>
-          <span id="maskedPassword">••••••••</span>
-          <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="togglePasswordView">
-        </p>
+        <div class="input-group">
+          <!-- Keep the actual password here, always accessible for copying -->
+          <input type="password" class="form-control" id="passwordInput" value="{{ decrypted_password }}" readonly>
+          <span class="input-group-text" id="togglePasswordView">
+            <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
+          </span>
+          <span class="input-group-text copy-btn" data-copy-target="passwordInput">
+            <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
+          </span>
+        </div>
       </div>
-
-      <!-- Script to toggle password visibility -->
-      <script>
-        document.getElementById("togglePasswordView").addEventListener("click", function () {
-          var passwordText = document.getElementById("maskedPassword");
-          var icon = document.getElementById("togglePasswordView");
-
-          if (passwordText.innerText === "••••••••") {
-            passwordText.innerText = "{{ decrypted_password|safe }}";  // Unmask the password
-            icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
-          } else {
-            passwordText.innerText = "••••••••";  // Mask the password
-            icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change to hide icon
-          }
-        });
-      </script>
 
       <!-- Edit Button (now links to the edit form) -->
       <div class="text-center">
@@ -53,9 +53,47 @@
     </div>
   </div>
 
-  <!-- Back to all vaults -->
+  <!-- Back to all vaults/breached vaults -->
   <div class="text-center mt-4">
-    <a href="{{ url_for('all_vaults') }}" class="btn btn-secondary">Back to All Vaults</a>
+    <a href="{{ url_for(referrer) }}" class="btn btn-secondary">Back</a>
   </div>
 </div>
+
+<script>
+  // Handle password visibility toggle
+  document.getElementById("togglePasswordView").addEventListener("click", function () {
+    var passwordInput = document.getElementById("passwordInput");
+    var icon = document.getElementById("toggleIcon");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";  // Show the password as plain text
+      icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
+    } else {
+      passwordInput.type = "password";  // Mask the password again
+      icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
+    }
+  });
+
+  // Function to copy text to clipboard
+  function copyToClipboard(targetId) {
+    var input = document.getElementById(targetId);
+    var valueToCopy = input.value;  // Directly use the value of the input field
+
+    // Use modern clipboard API to write text to the clipboard
+    navigator.clipboard.writeText(valueToCopy).then(function() {
+      alert("Copied");
+    }).catch(function(error) {
+      console.error("Failed to copy text: ", error);  // Log error if copy fails
+    });
+  }
+
+  // Add click event listeners to all copy buttons
+  document.querySelectorAll('.copy-btn').forEach(function(copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var targetId = copyBtn.getAttribute('data-copy-target');
+      copyToClipboard(targetId);
+    });
+  });
+</script>
+
 {% endblock %}
