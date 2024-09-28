@@ -35,8 +35,8 @@
       <div class="form-group mb-3">
         <strong>Password</strong>
         <div class="input-group">
-          <!-- Keep the actual password here, always accessible for copying -->
-          <input type="password" class="form-control" id="passwordInput" value="{{ decrypted_password }}" readonly>
+          <!-- Initially display a fixed-length placeholder of dots -->
+          <input type="password" class="form-control" id="passwordInput" value="●●●●●●●●●●●●" readonly>
           <span class="input-group-text" id="togglePasswordView">
             <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
           </span>
@@ -55,44 +55,61 @@
 
   <!-- Back to all vaults/breached vaults -->
   <div class="text-center mt-4">
-    <a href="{{ url_for(referrer) }}" class="btn btn-secondary">Back</a>
+    <form action="{{ url_for('delete_vault', account_id=account.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this account?');">
+      <input type="hidden" name="ref" value="{{ referrer }}">
+      <button type="submit" class="btn btn-danger mx-2">Delete</button>
+      <a href="{{ url_for(referrer) }}" class="btn btn-secondary">Back</a>
+    </form>
   </div>
 </div>
 
 <script>
+  // Store the actual decrypted password in a variable
+  var actualPassword = "{{ decrypted_password }}";  // Pass the actual password from Flask
+
+  // Flag to track password visibility
+  var isPasswordVisible = false;
+
   // Handle password visibility toggle
   document.getElementById("togglePasswordView").addEventListener("click", function () {
-    var passwordInput = document.getElementById("passwordInput");
-    var icon = document.getElementById("toggleIcon");
+      var passwordInput = document.getElementById("passwordInput");
+      var icon = document.getElementById("toggleIcon");
 
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";  // Show the password as plain text
-      icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
-    } else {
-      passwordInput.type = "password";  // Mask the password again
-      icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
-    }
+      if (!isPasswordVisible) {
+          // Show the actual password
+          passwordInput.value = actualPassword;
+          passwordInput.type = "text";  // Show the password as plain text
+          icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
+      } else {
+          // Mask the password and show fixed-length placeholder
+          passwordInput.value = "●●●●●●●●●●●●";  // Placeholder dots
+          passwordInput.type = "password";  // Mask the password again
+          icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
+      }
+
+      // Toggle the flag
+      isPasswordVisible = !isPasswordVisible;
   });
 
   // Function to copy text to clipboard
   function copyToClipboard(targetId) {
-    var input = document.getElementById(targetId);
-    var valueToCopy = input.value;  // Directly use the value of the input field
+      var input = document.getElementById(targetId);
+      var valueToCopy = isPasswordVisible ? input.value : actualPassword;  // Copy the real password even if hidden
 
-    // Use modern clipboard API to write text to the clipboard
-    navigator.clipboard.writeText(valueToCopy).then(function() {
-      alert("Copied");
-    }).catch(function(error) {
-      console.error("Failed to copy text: ", error);  // Log error if copy fails
-    });
+      // Use modern clipboard API to write text to the clipboard
+      navigator.clipboard.writeText(valueToCopy).then(function() {
+          alert("Copied");
+      }).catch(function(error) {
+          console.error("Failed to copy text: ", error);  // Log error if copy fails
+      });
   }
 
   // Add click event listeners to all copy buttons
   document.querySelectorAll('.copy-btn').forEach(function(copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      var targetId = copyBtn.getAttribute('data-copy-target');
-      copyToClipboard(targetId);
-    });
+      copyBtn.addEventListener('click', function () {
+          var targetId = copyBtn.getAttribute('data-copy-target');
+          copyToClipboard(targetId);
+      });
   });
 </script>
 

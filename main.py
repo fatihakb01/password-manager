@@ -1,7 +1,7 @@
 # Import libraries.
 import os
 from datetime import date
-from flask import Flask, abort, render_template, redirect, url_for, flash, request
+from flask import Flask, abort, render_template, redirect, url_for, flash, request, jsonify
 from flask_bootstrap import Bootstrap5
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
@@ -174,12 +174,8 @@ def show_vault(account_id):
     account = db.get_or_404(Account, account_id)
     manager = PasswordManager(account.browser)
 
-    try:
-        # Decrypt the password stored as a BLOB
-        decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
-    except Exception as e:
-        flash(f"Error decrypting password: {e}", "danger")
-        decrypted_password = None
+    # Decrypt the password stored as a BLOB
+    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
 
     # Get the referrer from the query string (either 'all_vaults' or 'breached_vaults')
     referrer = request.args.get('ref', 'all_vaults')
@@ -188,45 +184,48 @@ def show_vault(account_id):
                            account=account, decrypted_password=decrypted_password, referrer=referrer)
 
 
-# Edit the specific vault
+# Route to delete a specific vault
+@app.route('/vaults/<int:account_id>/delete', methods=["POST"])
+def delete_vault(account_id):
+    account = db.get_or_404(Account, account_id)
+
+    # Delete the account from the database
+    db.session.delete(account)
+    db.session.commit()
+
+    # Notify the user and redirect them back to the all vaults page (or breached_vaults based on referrer)
+    flash('Account deleted successfully.', 'success')
+    referrer = request.args.get('ref', 'all_vaults')
+    return redirect(url_for(referrer))
+
+
+# Edit the information inside the vault.
 @app.route('/vaults/<int:account_id>/edit', methods=["GET", "POST"])
 def edit_vault(account_id):
     account = db.get_or_404(Account, account_id)
     manager = PasswordManager(account.browser)
 
     # Decrypt the password to show in the form
-    try:
-        decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
-    except Exception as e:
-        flash(f"Error decrypting password: {e}", "danger")
-        decrypted_password = ''  # Default to empty if decryption fails
+    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
 
-    # Prefill the form with account data but DO NOT prefill password directly
+    # Prefill the form with account data
     form = EditVaultForm(obj=account)
 
-    # Get the referrer from the query string (either 'all_vaults' or 'breached_vaults')
-    referrer = request.args.get('ref', 'all_vaults')
-
     if form.validate_on_submit():
-        # Update the account with form data
+        # Normal submission without generating a password (password already filled by JavaScript if generated)
         account.url = form.url.data
         account.username = form.username.data
 
-        # Encrypt the new password before saving it
+        # Encrypt and store the new password (from input field)
         account.password = manager.encrypt_and_store_password(form.password.data)
 
-        # # Debugging output
-        # print(f"Updated password: {form.password.data}")
-        # print(f"Updated encrypted password: {account.password}")
-
-        # Save changes to the database
+        # Save the changes to the database
         db.session.commit()
 
         flash('Account updated successfully!', 'success')
-        return redirect(url_for('show_vault', account_id=account.id, ref=referrer))  # Redirect to account details page
+        return redirect(url_for('show_vault', account_id=account.id, ref=request.args.get('ref', 'all_vaults')))
 
-    return render_template("edit_vault.html", form=form, account=account,
-                           decrypted_password=decrypted_password, ref=referrer)
+    return render_template("edit_vault.html", form=form, account=account, decrypted_password=decrypted_password)
 
 
 # Register a new user account and redirect the user to the

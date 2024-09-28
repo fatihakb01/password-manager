@@ -13,7 +13,7 @@ db_path = os.getenv("DB_PATH")
 class PasswordManager:
     def __init__(self, browser):
         """ Initialize the PasswordManager with a specific browser.
-        :param browser: str - Name of the browser (chrome, brave, edge)
+        :param browser: str - Name of the browser (chrome, edge)
         """
         self.browser = browser
         password_input = PasswordInput(self.browser)
@@ -87,9 +87,11 @@ class PasswordManager:
 
 # # Test
 # if __name__ == "__main__":
-#     manager = PasswordManager("Microsoft Edge")
+#     manager = PasswordManager("Chrome")
 #     print(manager.return_aes_key())
 #     password = manager.read_and_decrypt_password(1, 9)
 #     print(password)
 #     encrypted_password = manager.encrypt_and_store_password(password)
 #     print(encrypted_password)
+#     random_password = generate_random_password(12)
+#     print("Generated Password:", random_password)

@@ -1,6 +1,7 @@
 # Import libraries.
 from flask_wtf import FlaskForm
-from wtforms.fields import StringField, SubmitField, PasswordField, SelectField
+from wtforms.fields import (StringField, SubmitField, PasswordField,
+                            SelectField, BooleanField, IntegerField)
 from wtforms.validators import DataRequired, Email, InputRequired, EqualTo, Length, URL
 
 
@@ -33,9 +34,18 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Let Me In!")
 
 
-# Create an EditForm to edit account details.
+# EditForm to edit account details.
 class EditVaultForm(FlaskForm):
     url = StringField("URL", validators=[DataRequired(), URL()])
     username = StringField("Username")
     password = PasswordField("Password")
+
+    # New fields for password generation options
+    password_length = IntegerField("Password Length", default=16, validators=[DataRequired()])
+    use_uppercase = BooleanField("Include Uppercase Letters", default=True)
+    use_lowercase = BooleanField("Include Lowercase Letters", default=True)
+    use_digits = BooleanField("Include Digits", default=True)
+    use_special = BooleanField("Include Special Characters", default=True)
+
     submit = SubmitField("Save Changes")
+    generate = SubmitField("Generate Random Password")
