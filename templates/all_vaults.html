@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'header.html' %}
 
 {% block title %}My Accounts{% endblock %}
 
@@ -9,6 +9,9 @@
 
   <!-- Buttons to switch between actions -->
   <div class="d-flex justify-content-center mb-4">
+    <!-- Add Account Button -->
+    <a href="{{ url_for('add_vault') }}" class="btn btn-primary mx-2">Add Account</a>
+
     <!-- Button for all vaults -->
     <a href="{{ url_for('all_vaults') }}" class="btn btn-primary mx-2">All Vaults</a>
 
@@ -37,10 +40,5 @@
       </a>
     {% endfor %}
   </div>
-</div>
-
-<!-- Add Account Button -->
-<div class="container text-center add">
-  <a href="#" class="button">Add Account</a>
 </div>
 {% endblock %}

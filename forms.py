@@ -34,7 +34,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Let Me In!")
 
 
-# EditForm to edit account details.
+# EditForm to edit & add account details.
 class EditVaultForm(FlaskForm):
     url = StringField("URL", validators=[DataRequired(), URL()])
     username = StringField("Username")

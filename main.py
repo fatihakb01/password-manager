@@ -1,7 +1,8 @@
 # Import libraries.
 import os
-from datetime import date
-from flask import Flask, abort, render_template, redirect, url_for, flash, request, jsonify
+from datetime import datetime
+from urllib.parse import urlparse
+from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
@@ -10,7 +11,7 @@ from sqlalchemy import Integer, String, Boolean, UniqueConstraint
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import RegisterForm, LoginForm, EditVaultForm
-from password_input import PasswordInput
+from password_input import PasswordInput, get_clearbit_logo
 from password_manager import PasswordManager
 from password_breached import PasswordBreached
 from dotenv import load_dotenv
@@ -103,15 +104,13 @@ with app.app_context():
 
 
 # # Create admin-only decorator.
-def admin_only(f):
+def signed_in(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # If id is not 1 then return abort with 403 error.
-        if current_user.is_authenticated and current_user.id != 1:
+        # If current user is not signed authenticated or anonymous,
+        # then return abort with 403 error.
+        if not current_user.is_authenticated or current_user.is_anonymous:
             return abort(403)
-        # If user is anonymous then return abort with 404 error.
-        elif current_user.is_anonymous:
-            return abort(404)
         else:
             # Otherwise continue with the route function.
             return f(*args, **kwargs)
@@ -119,117 +118,8 @@ def admin_only(f):
     return decorated_function
 
 
-# Go to the home page.
-@app.route('/')
-def home():
-    # return "Hello world"
-    return render_template("index.html", current_user=current_user)
-
-
-# Show all vaults (all accounts)
-@app.route('/vaults')
-def all_vaults():
-    result = db.session.execute(db.select(Account).where(Account.user_id == current_user.id))
-    accounts = result.scalars().all()
-    return render_template("all_vaults.html", current_user=current_user,
-                           accounts=accounts, referrer="all_vaults")
-
-
-# Check and update breached vaults (but don't render any page)
-@app.route('/check_breaches')
-def check_breaches():
-    # Query all accounts of the current user
-    result = db.session.execute(db.select(Account).where(Account.user_id == current_user.id))
-    accounts = result.scalars().all()
-
-    # Check for breached passwords and update the is_breached status
-    for account in accounts:
-        password_breached = PasswordBreached(account.browser, current_user.id, account.id)
-        is_breached = password_breached.check_password_pwned()
-
-        # Update is_breached column in the database
-        account.is_breached = is_breached
-        db.session.commit()
-
-    # After checking, redirect back to the all vaults page
-    flash('Breached vaults have been checked and updated.', 'success')
-    return redirect(url_for('all_vaults'))
-
-
-# Show only the breached vaults (no checking, just display)
-@app.route('/breached_vaults')
-def breached_vaults():
-    # Query accounts with breached passwords (only those already marked as breached)
-    breached_accounts = db.session.execute(
-        db.select(Account).where(Account.is_breached == 1)
-    ).scalars().all()
-
-    return render_template("all_vaults.html", current_user=current_user,
-                           accounts=breached_accounts, referrer="breached_vaults")
-
-
-# Show a specific vault
-@app.route('/vaults/<int:account_id>', methods=["GET", "POST"])
-def show_vault(account_id):
-    account = db.get_or_404(Account, account_id)
-    manager = PasswordManager(account.browser)
-
-    # Decrypt the password stored as a BLOB
-    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
-
-    # Get the referrer from the query string (either 'all_vaults' or 'breached_vaults')
-    referrer = request.args.get('ref', 'all_vaults')
-
-    return render_template("show_vault.html", current_user=current_user,
-                           account=account, decrypted_password=decrypted_password, referrer=referrer)
-
-
-# Route to delete a specific vault
-@app.route('/vaults/<int:account_id>/delete', methods=["POST"])
-def delete_vault(account_id):
-    account = db.get_or_404(Account, account_id)
-
-    # Delete the account from the database
-    db.session.delete(account)
-    db.session.commit()
-
-    # Notify the user and redirect them back to the all vaults page (or breached_vaults based on referrer)
-    flash('Account deleted successfully.', 'success')
-    referrer = request.args.get('ref', 'all_vaults')
-    return redirect(url_for(referrer))
-
-
-# Edit the information inside the vault.
-@app.route('/vaults/<int:account_id>/edit', methods=["GET", "POST"])
-def edit_vault(account_id):
-    account = db.get_or_404(Account, account_id)
-    manager = PasswordManager(account.browser)
-
-    # Decrypt the password to show in the form
-    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
-
-    # Prefill the form with account data
-    form = EditVaultForm(obj=account)
-
-    if form.validate_on_submit():
-        # Normal submission without generating a password (password already filled by JavaScript if generated)
-        account.url = form.url.data
-        account.username = form.username.data
-
-        # Encrypt and store the new password (from input field)
-        account.password = manager.encrypt_and_store_password(form.password.data)
-
-        # Save the changes to the database
-        db.session.commit()
-
-        flash('Account updated successfully!', 'success')
-        return redirect(url_for('show_vault', account_id=account.id, ref=request.args.get('ref', 'all_vaults')))
-
-    return render_template("edit_vault.html", form=form, account=account, decrypted_password=decrypted_password)
-
-
 # Register a new user account and redirect the user to the
-# home page if registration has been successful.
+# login page if registration has been successful.
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -279,7 +169,7 @@ def register():
 
 
 # Retrieve a user from the database based on their email.
-@app.route('/login', methods=["GET", "POST"])
+@app.route('/', methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -303,23 +193,161 @@ def login():
     return render_template("login.html", form=form, current_user=current_user)
 
 
-# Sign out and go to the home page.
+# Sign out and go to the login page.
+@signed_in
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for("home"))
+    return redirect(url_for("login"))
 
 
-# Go to the about page.
-@app.route('/about')
-def about():
-    return render_template("index.html", current_user=current_user)
+# Show all vaults (all accounts)
+@signed_in
+@app.route('/vaults')
+def all_vaults():
+    result = db.session.execute(db.select(Account).where(Account.user_id == current_user.id))
+    accounts = result.scalars().all()
+    return render_template("all_vaults.html", current_user=current_user,
+                           accounts=accounts, referrer="all_vaults")
 
 
-# Go to the contact page.
-@app.route('/contact')
-def contact():
-    return render_template("index.html", current_user=current_user)
+# Check and update breached vaults (but don't render any page)
+@signed_in
+@app.route('/check_breaches')
+def check_breaches():
+    # Query all accounts of the current user
+    result = db.session.execute(db.select(Account).where(Account.user_id == current_user.id))
+    accounts = result.scalars().all()
+
+    # Check for breached passwords and update the is_breached status
+    for account in accounts:
+        password_breached = PasswordBreached(account.browser, current_user.id, account.id)
+        is_breached = password_breached.check_password_pwned()
+
+        # Update is_breached column in the database
+        account.is_breached = is_breached
+        db.session.commit()
+
+    # After checking, redirect back to the all vaults page
+    flash('Breached vaults have been checked and updated.', 'success')
+    return redirect(url_for('all_vaults'))
+
+
+# Show only the breached vaults (no checking, just display)
+@signed_in
+@app.route('/breached_vaults')
+def breached_vaults():
+    # Query accounts with breached passwords (only those already marked as breached)
+    breached_accounts = db.session.execute(
+        db.select(Account).where(Account.is_breached == 1)
+    ).scalars().all()
+
+    return render_template("all_vaults.html", current_user=current_user,
+                           accounts=breached_accounts, referrer="breached_vaults")
+
+
+# Show a specific vault
+@signed_in
+@app.route('/vaults/<int:account_id>', methods=["GET", "POST"])
+def show_vault(account_id):
+    account = db.get_or_404(Account, account_id)
+    manager = PasswordManager(account.browser)
+
+    # Decrypt the password stored as a BLOB
+    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
+
+    # Get the referrer from the query string (either 'all_vaults' or 'breached_vaults')
+    referrer = request.args.get('ref', 'all_vaults')
+
+    return render_template("show_vault.html", current_user=current_user,
+                           account=account, decrypted_password=decrypted_password, referrer=referrer)
+
+
+# Route to delete a specific vault
+@signed_in
+@app.route('/vaults/<int:account_id>/delete', methods=["POST"])
+def delete_vault(account_id):
+    account = db.get_or_404(Account, account_id)
+
+    # Delete the account from the database
+    db.session.delete(account)
+    db.session.commit()
+
+    # Notify the user and redirect them back to the all vaults page (or breached_vaults based on referrer)
+    flash('Account deleted successfully.', 'success')
+    referrer = request.args.get('ref', 'all_vaults')
+    return redirect(url_for(referrer))
+
+
+# Edit the information inside the vault.
+@signed_in
+@app.route('/vaults/<int:account_id>/edit', methods=["GET", "POST"])
+def edit_vault(account_id):
+    account = db.get_or_404(Account, account_id)
+    manager = PasswordManager(account.browser)
+
+    # Decrypt the password to show in the form
+    decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
+
+    # Prefill the form with account data
+    form = EditVaultForm(obj=account)
+
+    if form.validate_on_submit():
+        # Normal submission without generating a password (password already filled by JavaScript if generated)
+        account.url = form.url.data
+        account.username = form.username.data
+
+        # Encrypt and store the new password (from input field)
+        account.password = manager.encrypt_and_store_password(form.password.data)
+
+        # Save the changes to the database
+        db.session.commit()
+
+        flash('Account updated successfully!', 'success')
+        return redirect(url_for('show_vault', account_id=account.id, ref=request.args.get('ref', 'all_vaults')))
+
+    return render_template("edit_vault.html", form=form, account=account, decrypted_password=decrypted_password)
+
+
+# Add the information to a new vault.
+@signed_in
+@app.route('/vaults/add', methods=["GET", "POST"])
+def add_vault():
+    form = EditVaultForm()
+    default_browser = "Chrome"
+
+    if form.validate_on_submit():
+        # Parse the base domain from the full URL
+        parsed_url = urlparse(form.url.data)
+        base_url = parsed_url.scheme + '://' + parsed_url.netloc
+
+        # Create a new account
+        new_account = Account(
+            user_id=current_user.id,
+            url=base_url,  # Base domain for the `url` field
+            full_url=form.url.data,  # Full URL
+            icon=get_clearbit_logo(form.url.data),
+            username=form.username.data,
+            password=form.password.data,
+            browser=default_browser,
+            date_created=int(datetime.now().timestamp()),  # Add the timestamp
+            date_last_used=int(datetime.now().timestamp()),  # Add timestamp for last used
+            date_password_modified=int(datetime.now().timestamp())  # Password modification timestamp
+        )
+
+        # Encrypt the password before storing
+        manager = PasswordManager(default_browser)
+        new_account.password = manager.encrypt_and_store_password(form.password.data)
+
+        # Add the new account to the database
+        db.session.add(new_account)
+        db.session.commit()
+
+        # Redirect back to all vaults after adding
+        flash('Account added successfully!', 'success')
+        return redirect(url_for('all_vaults'))
+
+    return render_template("edit_vault.html", form=form, account=None, decrypted_password=None)
 
 
 # Run Flask application with debug mode turned on.
