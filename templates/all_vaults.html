@@ -6,7 +6,6 @@
 <div class="container">
   <h1 class="heading">My Accounts</h1>
   <p class="description">These are the accounts you have saved.</p>
-
   <!-- Buttons to switch between actions -->
   <div class="d-flex justify-content-center mb-4">
     <!-- Add Account Button -->
@@ -30,10 +29,10 @@
         <!-- Card with fixed size, margin for spacing -->
         <div class="card mb-4 mx-3" style="width: 300px; height: 400px;">
           <!-- Display the icon in the front of the card -->
-          <div class="front" style="background-image: url({{ account.icon }}); height: 400px; background-size: cover;">
+          <div class="front" style="background-image: url({{ account.icon }}); height: 400px;">
           </div>
           <!-- Card content with URL, username, and masked password -->
-          <div class="back">
+          <div class="back" style="background-image: url({{ account.icon }}); height: 400px;">
             <div class="title">{{ account.url }}</div>
           </div>
         </div>

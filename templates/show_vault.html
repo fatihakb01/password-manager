@@ -5,9 +5,9 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="heading text-center">Account Details</h1>
-  
+
   <!-- Account details overview -->
-  <div class="card mx-auto" style="width: 400px;">
+  <div class="card mx-auto" style="width: 400px; background-image: url({{ account.icon }})">
     <div class="card-body">
       <!-- URL Field with copy button -->
       <div class="form-group mb-3">
@@ -35,8 +35,8 @@
       <div class="form-group mb-3">
         <strong>Password</strong>
         <div class="input-group">
-          <!-- Initially display a fixed-length placeholder of dots -->
-          <input type="password" class="form-control" id="passwordInput" value="●●●●●●●●●●●●" readonly>
+          <!-- Pass the actual decrypted password as a data attribute -->
+          <input type="password" class="form-control" id="passwordInput" data-password="{{ decrypted_password }}" value="●●●●●●●●●●●●" readonly>
           <span class="input-group-text" id="togglePasswordView">
             <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
           </span>
@@ -62,55 +62,6 @@
     </form>
   </div>
 </div>
-
-<script>
-  // Store the actual decrypted password in a variable
-  var actualPassword = "{{ decrypted_password }}";  // Pass the actual password from Flask
-
-  // Flag to track password visibility
-  var isPasswordVisible = false;
-
-  // Handle password visibility toggle
-  document.getElementById("togglePasswordView").addEventListener("click", function () {
-      var passwordInput = document.getElementById("passwordInput");
-      var icon = document.getElementById("toggleIcon");
-
-      if (!isPasswordVisible) {
-          // Show the actual password
-          passwordInput.value = actualPassword;
-          passwordInput.type = "text";  // Show the password as plain text
-          icon.src = "{{ url_for('static', filename='images/show.png') }}";  // Change to show icon
-      } else {
-          // Mask the password and show fixed-length placeholder
-          passwordInput.value = "●●●●●●●●●●●●";  // Placeholder dots
-          passwordInput.type = "password";  // Mask the password again
-          icon.src = "{{ url_for('static', filename='images/hide.png') }}";  // Change back to hide icon
-      }
-
-      // Toggle the flag
-      isPasswordVisible = !isPasswordVisible;
-  });
-
-  // Function to copy text to clipboard
-  function copyToClipboard(targetId) {
-      var input = document.getElementById(targetId);
-      var valueToCopy = isPasswordVisible ? input.value : actualPassword;  // Copy the real password even if hidden
-
-      // Use modern clipboard API to write text to the clipboard
-      navigator.clipboard.writeText(valueToCopy).then(function() {
-          alert("Copied");
-      }).catch(function(error) {
-          console.error("Failed to copy text: ", error);  // Log error if copy fails
-      });
-  }
-
-  // Add click event listeners to all copy buttons
-  document.querySelectorAll('.copy-btn').forEach(function(copyBtn) {
-      copyBtn.addEventListener('click', function () {
-          var targetId = copyBtn.getAttribute('data-copy-target');
-          copyToClipboard(targetId);
-      });
-  });
-</script>
-
+<!-- Reference the external script -->
+<script src="{{ url_for('static', filename='js/show.js') }}"></script>
 {% endblock %}

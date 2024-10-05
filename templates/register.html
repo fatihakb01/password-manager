@@ -5,7 +5,6 @@
   <!-- Page Header -->
   <header
     class="masthead"
-    style="background-image: url('../static/assets/img/register-bg.jpg')"
   >
     <div class="container position-relative px-4 px-lg-5">
       <div class="row gx-4 gx-lg-5 justify-content-center">
@@ -24,11 +23,65 @@
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
           <!-- Render your registration form here -->
-          {{render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+          <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <!-- Email Field -->
+            <div class="mb-3">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control") }}
+            </div>
+
+            <!-- Password Field 1 with visibility toggle and password generation -->
+            <div class="mb-3">
+              {{ form.password1.label(class="form-label") }}
+              <div class="input-group">
+                {{ form.password1(class="form-control", id="password1Input") }}
+                <span class="input-group-text" id="togglePassword1View">
+                  <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon1">
+                </span>
+              </div>
+            </div>
+
+            <!-- Password Field 2 with visibility toggle -->
+            <div class="mb-3">
+              {{ form.password2.label(class="form-label") }}
+              <div class="input-group">
+                {{ form.password2(class="form-control", id="password2Input") }}
+                <span class="input-group-text" id="togglePassword2View">
+                  <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon2">
+                </span>
+              </div>
+            </div>
+
+            <!-- Password Generation Button -->
+            <div class="mb-3">
+              <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Generate Random Password</button>
+              <button type="button" class="btn btn-outline-secondary" id="copyPasswordBtn">Copy Password</button>
+            </div>
+
+            <!-- Name Field -->
+            <div class="mb-3">
+              {{ form.name.label(class="form-label") }}
+              {{ form.name(class="form-control") }}
+            </div>
+
+            <!-- Browser Option Field -->
+            <div class="mb-3">
+              {{ form.browser_option.label(class="form-label") }}
+              {{ form.browser_option(class="form-control") }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mb-3 text-center">
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+
+          </form>
         </div>
       </div>
     </div>
   </main>
-
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
 {% include "footer.html" %}
 {% endblock %}

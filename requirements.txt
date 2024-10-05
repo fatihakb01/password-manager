@@ -6,7 +6,7 @@ Flask-WTF==1.2.1
 Werkzeug==3.0.4
 MarkupSafe==2.1.5
 requests==2.31.0
-
+SQLAlchemy==2.0.25
 
 
 # Bootstrap integration for Flask

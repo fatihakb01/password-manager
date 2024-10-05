@@ -29,6 +29,7 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     {% endblock %}
 
     <title>{% block title %}{% endblock %}</title>
@@ -36,14 +37,13 @@
   <body>
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
-      <!-- Flash messages block, typically placed right under the navbar or header -->
+      <!-- Flash messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="container mt-4">
+          <div class="flash-container">
             {% for category, message in messages %}
-              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              <div class="alert alert-{{ category }}">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
             {% endfor %}
           </div>
