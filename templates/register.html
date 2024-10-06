@@ -1,87 +1,113 @@
-{% from "bootstrap5/form.html" import render_form %}
 {% block content %}
 {% include "header.html" %}
 
-  <!-- Page Header -->
-  <header
-    class="masthead"
-  >
+<!-- Page Header Section for Register Page -->
+<header class="masthead">
     <div class="container position-relative px-4 px-lg-5">
-      <div class="row gx-4 gx-lg-5 justify-content-center">
-        <div class="col-md-10 col-lg-8 col-xl-7">
-          <div class="page-heading">
-            <h1>Register</h1>
-            <span class="subheading">Sign up for better password security</span>
-          </div>
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <!-- Heading area of the page with title and subheading -->
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="page-heading">
+                    <h1>Register</h1>
+                    <span class="subheading">Sign up for better password security</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </header>
+</header>
 
-  <main class="mb-4">
+<main class="mb-4">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-8 col-md-10 mx-auto">
-          <!-- Render your registration form here -->
-          <form method="POST">
-            {{ form.hidden_tag() }}
+        <div class="row">
+            <!-- Center the registration form on the page using Bootstrap's grid system -->
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <form method="POST">
+                    <!-- CSRF protection token -->
+                    {{ form.hidden_tag() }}
 
-            <!-- Email Field -->
-            <div class="mb-3">
-              {{ form.email.label(class="form-label") }}
-              {{ form.email(class="form-control") }}
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                    </div>
+
+                    <!-- Password Generation Options -->
+                    <div class="mb-3">
+                        {{ form.password_length.label(class="form-label") }}
+                        {{ form.password_length(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.use_uppercase(class="form-check-input", id="useUppercase") }}
+                        {{ form.use_uppercase.label(class="form-check-label", for="useUppercase") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.use_lowercase(class="form-check-input", id="useLowercase") }}
+                        {{ form.use_lowercase.label(class="form-check-label", for="useLowercase") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.use_digits(class="form-check-input", id="useDigits") }}
+                        {{ form.use_digits.label(class="form-check-label", for="useDigits") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.use_special(class="form-check-input", id="useSpecial") }}
+                        {{ form.use_special.label(class="form-check-label", for="useSpecial") }}
+                    </div>
+
+                    <!-- Password Field 1 with visibility toggle and password generation -->
+                    <div class="mb-3">
+                        {{ form.password1.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.password1(class="form-control", id="password1Input") }}
+                            <span class="input-group-text" id="togglePassword1View">
+                                <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon1">
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Password Field 2 with visibility toggle -->
+                    <div class="mb-3">
+                        {{ form.password2.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.password2(class="form-control", id="password2Input") }}
+                            <span class="input-group-text" id="togglePassword2View">
+                                <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon2">
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Password Generation and Copy Button -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Generate Random Password</button>
+                        <button type="button" class="btn btn-outline-secondary" id="copyPasswordBtn">Copy Password</button>
+                    </div>
+
+                    <!-- Name Field -->
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+
+                    <!-- Browser Option Field -->
+                    <div class="mb-3">
+                        {{ form.browser_option.label(class="form-label") }}
+                        {{ form.browser_option(class="form-control") }}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mb-3 text-center">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+
+                </form>
             </div>
-
-            <!-- Password Field 1 with visibility toggle and password generation -->
-            <div class="mb-3">
-              {{ form.password1.label(class="form-label") }}
-              <div class="input-group">
-                {{ form.password1(class="form-control", id="password1Input") }}
-                <span class="input-group-text" id="togglePassword1View">
-                  <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon1">
-                </span>
-              </div>
-            </div>
-
-            <!-- Password Field 2 with visibility toggle -->
-            <div class="mb-3">
-              {{ form.password2.label(class="form-label") }}
-              <div class="input-group">
-                {{ form.password2(class="form-control", id="password2Input") }}
-                <span class="input-group-text" id="togglePassword2View">
-                  <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon2">
-                </span>
-              </div>
-            </div>
-
-            <!-- Password Generation Button -->
-            <div class="mb-3">
-              <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Generate Random Password</button>
-              <button type="button" class="btn btn-outline-secondary" id="copyPasswordBtn">Copy Password</button>
-            </div>
-
-            <!-- Name Field -->
-            <div class="mb-3">
-              {{ form.name.label(class="form-label") }}
-              {{ form.name(class="form-control") }}
-            </div>
-
-            <!-- Browser Option Field -->
-            <div class="mb-3">
-              {{ form.browser_option.label(class="form-label") }}
-              {{ form.browser_option(class="form-control") }}
-            </div>
-
-            <!-- Submit Button -->
-            <div class="mb-3 text-center">
-              {{ form.submit(class="btn btn-primary") }}
-            </div>
-
-          </form>
         </div>
-      </div>
     </div>
-  </main>
+</main>
+
+<!-- Link to external JavaScript for additional registration page functionality -->
 <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+
+<!-- Include the footer at the bottom of the page -->
 {% include "footer.html" %}
 {% endblock %}

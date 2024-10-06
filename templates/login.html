@@ -6,12 +6,17 @@
 <header
   class="masthead"
 >
+<!-- Link to external CSS stylesheets -->
 <link rel="stylesheet" href="{{ url_for('static', filename='../static/css/styles.css') }}">
+  <!-- Container for the page heading -->
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
+      <!-- Page heading text centered on the page -->
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="page-heading">
+          <!-- Main heading for the login page -->
           <h1>Log In</h1>
+          <!-- Subheading to greet returning users -->
           <span class="subheading">Welcome Back!</span>
         </div>
       </div>
@@ -22,12 +27,15 @@
 <main class="mb-4">
   <div class="container">
     <div class="row">
+      <!-- Center the login form on the page using margin auto (mx-auto) -->
       <div class="col-lg-8 col-md-10 mx-auto">
-        <!-- Render login form here -->
+        <!-- Render login form using the 'render_form' template from Bootstrap-Flask -->
         {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
       </div>
     </div>
   </div>
 </main>
 
-{% include "footer.html" %} {% endblock %}
+<!-- Include the footer template at the bottom of the page -->
+{% include "footer.html" %}
+{% endblock %}

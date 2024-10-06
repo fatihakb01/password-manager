@@ -1,5 +1,6 @@
 {% extends 'header.html' %}
 
+<!-- Conditional title: "Edit Account" if editing, "Add Account" if creating a new one -->
 {% block title %}
   {% if account %} Edit Account {% else %} Add Account {% endif %}
 {% endblock %}
@@ -8,66 +9,75 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="heading text-center">
+    <!-- Conditional heading: "Edit Account" or "Add Account" -->
     {% if account %}Edit Account{% else %}Add Account{% endif %}
   </h1>
 
-  <!-- Form to edit account details -->
+  <!-- Card for account editing or adding new accounts -->
   <div class="card mx-auto" style="width: 600px; min-height: 600px; background-image: url({{ account.icon }})">
-    <!-- Increased card width and added min-height -->
+    <!-- Card body holding the form -->
     <div class="card-body">
-      <!-- Ensuring the whole form is inside the card-body for uniform styling -->
+      <!-- Form for adding or editing an account -->
       <form method="POST" action="
       {% if account %}
         {{ url_for('edit_vault', account_id=account.id) }}
       {% else %}
         {{ url_for('add_vault') }}
       {% endif %}">
-        <!-- CSRF protection -->
+        <!-- CSRF token for security -->
         {{ form.hidden_tag() }}
 
-        <!-- URL Field with copy button -->
+        <!-- URL input field with copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.url.label(class="form-label") }}</strong>
           <div class="input-group">
-            {{ form.url(class="form-control", id="urlInput") }}
+            {% if account %}
+              {{ form.url(class="form-control", id="urlInput") }}
+            {% else %}
+              {{ form.url(class="form-control", id="urlInput", value="https://") }}
+            {% endif %}
             <span class="input-group-text copy-btn" id="copyUrl" data-copy-target="urlInput">
+              <!-- Copy URL button -->
               <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
             </span>
           </div>
         </div>
 
-        <!-- Username Field with copy button -->
+        <!-- Username input field with copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.username.label(class="form-label") }}</strong>
           <div class="input-group">
             {{ form.username(class="form-control", id="usernameInput") }}
             <span class="input-group-text copy-btn" id="copyUsername" data-copy-target="usernameInput">
+              <!-- Copy Username button -->
               <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
             </span>
           </div>
         </div>
 
-        <!-- Password Field with hide/unhide and copy button -->
+        <!-- Password input field with hide/show toggle and copy button -->
         <div class="form-group mb-3">
           <strong>{{ form.password.label(class="form-label") }}</strong>
           <div class="input-group">
             {{ form.password(class="form-control", id="passwordInput", placeholder="Enter your password") }}
             <span class="input-group-text" id="togglePassword">
+              <!-- Toggle password visibility button -->
               <img src="{{ url_for('static', filename='images/hide.png') }}" alt="Toggle Password" width="20px" id="toggleIcon">
             </span>
             <span class="input-group-text copy-btn" id="copyPassword" data-copy-target="passwordInput">
+              <!-- Copy Password button -->
               <img src="{{ url_for('static', filename='images/copy.png') }}" alt="Copy" width="20px">
             </span>
           </div>
         </div>
 
-          <!-- Password length field -->
+          <!-- Password length input field for password generation -->
           <div class="form-group mt-2">
             <strong>{{ form.password_length.label(class="form-label") }}</strong>
             {{ form.password_length(class="form-control", id="password_length") }}
           </div>
 
-          <!-- Character options for password generation -->
+          <!-- Options for character types in generated password -->
           <div class="form-check mt-2">
             {{ form.use_uppercase(class="form-check-input", id="use_uppercase") }}
             <label class="form-check-label" id="use_uppercase">Include Uppercase Letters</label>
@@ -85,14 +95,20 @@
             <label class="form-check-label" id="use_special">Include Special Characters</label>
           </div>
 
-
-        <!-- Save Changes and Generate Password buttons -->
-        <div class="text-center mt-4"> <!-- Added margin-top for spacing -->
+        <!-- Buttons for saving changes, generating password, and cancelling -->
+        <div class="text-center mt-4">
           {{ form.submit(class="btn btn-primary") }}
           <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Generate Random Password</button>
 
-           <!-- Conditional Cancel button -->
-          <a href="{% if account %}{{ url_for('show_vault', account_id=account.id) }}{% else %}{{ url_for('all_vaults') }}{% endif %}" class="btn btn-secondary">Cancel</a>
+          <!-- Conditional cancel button -->
+          <a href="
+          {% if account %}
+            {{ url_for('show_vault', account_id=account.id) }}
+          {% else %}
+            {{ url_for('all_vaults') }}
+          {% endif %}"
+             class="btn btn-secondary">Cancel
+          </a>
          </div>
       </form>
     </div>

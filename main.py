@@ -1,4 +1,4 @@
-# Import libraries.
+# Import modules.
 import os
 import sqlite3
 from datetime import datetime
@@ -16,19 +16,6 @@ from password_input import PasswordInput, get_clearbit_logo
 from password_manager import PasswordManager
 from password_breached import PasswordBreached
 from dotenv import load_dotenv
-
-'''
-Make sure the required packages are installed: 
-Open the Terminal in PyCharm (bottom left). 
-
-On Windows type:
-python -m pip install -r requirements.txt
-
-On MacOS type:
-pip3 install -r requirements.txt
-
-This will install the packages from the requirements.txt for this project.
-'''
 
 # Initialize the Flask application and Bootstrap extension.
 load_dotenv()
@@ -162,7 +149,6 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-
         login_user(new_user)
 
         if app.config['SQLALCHEMY_DATABASE_URI']:
@@ -191,7 +177,6 @@ def login():
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-
         result = db.session.execute(db.select(User).where(User.email == email))
         user = result.scalar()
 
@@ -253,7 +238,6 @@ def check_breaches():
     for account in accounts:
         password_breached = PasswordBreached(account.browser, current_user.id, account.id)
         is_breached = password_breached.check_password_pwned()
-
         account.is_breached = is_breached
         db.session.commit()
 
@@ -339,22 +323,13 @@ def edit_vault(account_id):
     """
     account = db.get_or_404(Account, account_id)
     manager = PasswordManager(account.browser)
-
-    # Decrypt the password to show in the form
     decrypted_password = manager.read_and_decrypt_password(current_user.id, account.id)
-
-    # Prefill the form with account data
     form = EditVaultForm(obj=account)
 
     if form.validate_on_submit():
-        # Normal submission without generating a password (password already filled by JavaScript if generated)
         account.url = form.url.data
         account.username = form.username.data
-
-        # Encrypt and store the new password (from input field)
         account.password = manager.encrypt_and_store_password(form.password.data)
-
-        # Save the changes to the database
         db.session.commit()
 
         flash('Account updated successfully!', 'success')
@@ -370,10 +345,12 @@ def add_vault():
     """
     Add a new vault (account) to the user's account.
     If the account is added successfully, redirect to the vaults page.
+    Otherwise, the account already exist, stay on the add page.
 
     Returns:
         render_template (str): Renders the add vault page with the form if GET request,
-        or redirects to the vaults page after successful addition.
+        or redirects to the vaults page after successful addition, or stay on the add page
+        in case of failure.
     """
     form = EditVaultForm()
     db_path = os.getenv("DB_PATH")
@@ -381,6 +358,7 @@ def add_vault():
     cursor = conn.cursor()
     cursor.execute("SELECT browser FROM users WHERE id = ?", (current_user.id,))
     browser = cursor.fetchone()[0]
+
     if browser is None:
         browser = os.getenv("DEFAULT_BROWSER")
     conn.close()
@@ -392,20 +370,19 @@ def add_vault():
 
             new_account = Account(
                 user_id=current_user.id,
-                url=base_url,  # Base domain for the `url` field
-                full_url=form.url.data,  # Full URL
+                url=base_url,
+                full_url=form.url.data,
                 icon=get_clearbit_logo(form.url.data),
                 username=form.username.data,
                 password=form.password.data,
                 browser=browser,
-                date_created=int(datetime.now().timestamp()),  # Add the timestamp
-                date_last_used=int(datetime.now().timestamp()),  # Add timestamp for last used
-                date_password_modified=int(datetime.now().timestamp())  # Password modification timestamp
+                date_created=int(datetime.now().timestamp()),
+                date_last_used=int(datetime.now().timestamp()),
+                date_password_modified=int(datetime.now().timestamp())
             )
 
             manager = PasswordManager(browser)
             new_account.password = manager.encrypt_and_store_password(form.password.data)
-
             db.session.add(new_account)
             db.session.commit()
 

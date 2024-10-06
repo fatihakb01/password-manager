@@ -15,7 +15,7 @@ body {
     background-attachment: fixed;
 }
 
-/* Page headings */
+/* Styling for page headings */
 .heading {
     width: 100%;
     margin-left: 1rem;
@@ -29,6 +29,7 @@ body {
     position: relative;
 }
 
+/* General description text */
 .description {
     width: 100%;
     margin-top: 0;
@@ -42,7 +43,7 @@ body {
     border-radius: 6px;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover; /* Ensures background image covers the card */
+    background-size: cover;
     text-align: center;
     justify-content: center;
     align-items: center;
@@ -55,6 +56,7 @@ body {
     transition: ease-in-out 600ms;
 }
 
+/* Gradient overlay for card fronts */
 .front:before, .back:before {
     position: absolute;
     display: block;
@@ -74,38 +76,40 @@ body {
     background-color: #fff;
     transform: rotateY(-180deg);
     display: flex;
-    align-items: flex-end; /* Align content to the bottom */
-    justify-content: center; /* Center horizontally */
-    padding: 10px; /* Space around content */
+    align-items: flex-end;
+    justify-content: center;
+    padding: 10px;
 }
 
+/* Styling for text on the back of the card */
 .back .title {
     margin: 10px 0;
     display: block;
     font-size: 18px;
     color: black;
     text-align: center;
-    word-wrap: break-word; /* Break long URLs */
+    word-wrap: break-word;
     overflow-wrap: break-word;
-    white-space: normal; /* Allow wrapping */
+    white-space: normal;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.7); /* Light background for readability */
-    border-radius: 5px; /* Rounded corners */
-    max-width: 90%; /* Ensure it stays within the card's width */
-    margin-bottom: 10px; /* Space between bottom edge and URL */
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 5px;
+    max-width: 90%;
+    margin-bottom: 10px;
 }
 
-/* Flip effect */
-.card:hover .front, .card:hover .back {
+/* Flip effect on hover */
+.card:hover .front {
     transform: rotateY(180deg);
-}
-
-.card:nth-child(even):hover .front, .card:nth-child(even):hover .back {
-    transform: rotateY(-180deg);
 }
 
 .card:hover .back {
     transform: rotateY(0deg);
+}
+
+/* Reverse flip for even-numbered cards */
+.card:nth-child(even):hover .front, .card:nth-child(even):hover .back {
+    transform: rotateY(-180deg);
 }
 
 .card:nth-child(even) .back {
@@ -116,37 +120,39 @@ body {
     transform: rotateY(0deg);
 }
 
-/* Consistent card dimensions and hover effect */
+/* Consistent card styling */
 .card {
-    width: 300px; /* Fixed width */
-    height: 400px; /* Fixed height */
-    position: relative; /* Allows front and back to position correctly */
+    width: 300px;
+    height: 400px;
+    position: relative;
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-size: cover;
     background-position: center;
     cursor: pointer;
-    transition: transform 0.2s ease; /* Slight hover effect */
+    transition: transform 0.2s ease;
 }
 
+/* Styling for content inside card */
 .card-body {
-    background-color: rgba(0, 0, 0, 0.5); /* Optional: semi-transparent overlay */
-    color: white; /* Make text white for contrast on dark backgrounds */
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
     padding: 20px;
     border-radius: 6px;
 }
 
+/* Scaling effect on hover */
 .card:hover {
-    transform: scale(1.05); /* Slight scaling on hover */
+    transform: scale(1.05);
 }
 
-/* Gradient overlay on card front */
+/* Gradient overlay specifically for the front of the card */
 .front:before {
     background: linear-gradient(135deg, #1a9be6, #1a57e6);
     opacity: 0.25;
 }
 
-/* Button styles */
+/* Generic button styles */
 .button {
     transform: translateZ(40px);
     cursor: pointer;
@@ -164,6 +170,7 @@ body {
     transition: 300ms ease;
 }
 
+/* Button shadow effect */
 .button:before {
     transition: 300ms ease;
     position: absolute;
@@ -192,7 +199,7 @@ body {
     box-shadow: 0 0 10px 10px rgba(230, 87, 230, 0.25);
 }
 
-/* Button hover and active effects */
+/* Button hover effects */
 .button:hover {
     transform: translateZ(55px);
 }
@@ -201,6 +208,7 @@ body {
     transform: translateZ(-55px);
 }
 
+/* Button active effects */
 .button:active {
     transform: translateZ(20px);
 }
@@ -218,9 +226,9 @@ body {
     z-index: 1000; /* Make sure it appears on top */
 }
 
-/* Success message (e.g., green background) */
+/* Styling for success messages */
 .alert-success {
-    background-color: #28a745; /* Green background */
+    background-color: #28a745;
     color: white;
     padding: 1rem;
     border-radius: 5px;
@@ -228,14 +236,12 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Failure message (e.g., red background) */
+/* Styling for failure messages */
 .alert-failure {
-    background-color: #dc3545; /* Red background */
+    background-color: #dc3545;
     color: white;
     padding: 1rem;
     border-radius: 5px;
     margin-bottom: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
-

@@ -6,12 +6,13 @@
 <div class="container">
   <h1 class="heading">My Accounts</h1>
   <p class="description">These are the accounts you have saved.</p>
-  <!-- Buttons to switch between actions -->
+
+  <!-- Buttons to switch between different actions related to vaults -->
   <div class="d-flex justify-content-center mb-4">
-    <!-- Add Account Button -->
+    <!-- Button to add a new account -->
     <a href="{{ url_for('add_vault') }}" class="btn btn-primary mx-2">Add Account</a>
 
-    <!-- Button for all vaults -->
+    <!-- Button to view all vaults -->
     <a href="{{ url_for('all_vaults') }}" class="btn btn-primary mx-2">All Vaults</a>
 
     <!-- Button for breached vaults (no checking, just display) -->
@@ -21,17 +22,18 @@
     <a href="{{ url_for('check_breaches') }}" class="btn btn-warning mx-2">Check Breached Vaults</a>
   </div>
 
-  <!-- Flexbox container to center cards and distribute evenly -->
+  <!-- Flexbox container to display all vaults as cards, centered and wrapped -->
   <div class="d-flex flex-wrap justify-content-center">
     {% for account in accounts %}
-      <!-- Each card is wrapped in a clickable anchor tag -->
+      <!-- Each card is clickable and links to the detailed view of the account -->
       <a href="{{ url_for('show_vault', account_id=account.id, ref=referrer) }}" class="text-decoration-none">
-        <!-- Card with fixed size, margin for spacing -->
+        <!-- Card element with specific width and height for uniformity -->
         <div class="card mb-4 mx-3" style="width: 300px; height: 400px;">
-          <!-- Display the icon in the front of the card -->
+          <!-- Card front side displaying the account's icon -->
           <div class="front" style="background-image: url({{ account.icon }}); height: 400px;">
           </div>
-          <!-- Card content with URL, username, and masked password -->
+
+          <!-- Card back side showing account details like URL -->
           <div class="back" style="background-image: url({{ account.icon }}); height: 400px;">
             <div class="title">{{ account.url }}</div>
           </div>

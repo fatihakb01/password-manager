@@ -2,15 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Ensures the page is responsive on all devices -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
 
     {% block styles %}
-    <!-- Load Bootstrap-Flask CSS here -->
+    <!-- Load Bootstrap-Flask CSS for default styles -->
     {{ bootstrap.load_css() }}
-    <!-- Link to the styles.css here to apply styling to all the child templates.-->
+
+    <!-- Google Fonts for custom typography -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,700"
@@ -19,25 +21,32 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Poppins:300,400,700"
     />
+
+    <!-- FontAwesome icons for UI components -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
       integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
       crossorigin="anonymous"
     />
+
+    <!-- Link to custom styles for the app -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
+
+    <!-- Favicon for the browser tab -->
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     {% endblock %}
 
+    <!-- Title of the page, set dynamically -->
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
-      <!-- Flash messages -->
+      <!-- Flash messages for user feedback (e.g., success, error messages) -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           <div class="flash-container">
@@ -49,7 +58,10 @@
           </div>
         {% endif %}
       {% endwith %}
+
+      <!-- Container for navigation items and mobile toggle button -->
       <div class="container px-4 px-lg-5">
+        <!-- Button to toggle the navigation on small screens -->
         <button
           class="navbar-toggler"
           type="button"
@@ -62,9 +74,11 @@
           Menu
           <i class="fas fa-bars"></i>
         </button>
+
+        <!-- Collapsible navigation bar -->
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav ms-auto py-4 py-lg-0">
-            <!-- Only show Login/Register if user is logged out. Otherwise, show "Log Out" -->
+            <!-- If the user is not logged in, show Login and Register links -->
             {% if not current_user.is_authenticated %}
               <li class="nav-item">
                 <a
@@ -77,10 +91,11 @@
                 <a
                   class="nav-link px-lg-3 py-3 py-lg-4"
                   href="{{ url_for('register') }}"
-                  >Register</a
-                >
+                  >Register
+                </a>
               </li>
             {% else %}
+              <!-- If the user is logged in, show Log Out and Vaults links -->
               <li class="nav-item">
                 <a
                   class="nav-link px-lg-3 py-3 py-lg-4"
@@ -100,6 +115,8 @@
         </div>
       </div>
     </nav>
+
+  <!-- Content of the page will be injected here -->
   {% block content %}{% endblock %}
   </body>
 </html>

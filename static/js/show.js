@@ -1,6 +1,6 @@
 // Get the password input element and its actual password from the data attribute
 var passwordInput = document.getElementById("passwordInput");
-var actualPassword = passwordInput.getAttribute('data-password');  // Decrypted password from data attribute
+var actualPassword = passwordInput.getAttribute('data-password');
 
 // Flag to track password visibility
 var isPasswordVisible = false;
@@ -12,13 +12,13 @@ document.getElementById("togglePasswordView").addEventListener("click", function
     if (!isPasswordVisible) {
         // Show the actual password
         passwordInput.value = actualPassword;
-        passwordInput.type = "text";  // Show the password as plain text
-        icon.src = "/static/images/show.png";  // Change to show icon
+        passwordInput.type = "text";
+        icon.src = "/static/images/show.png";
     } else {
         // Mask the password and show fixed-length placeholder
-        passwordInput.value = "●●●●●●●●●●●●";  // Placeholder dots
-        passwordInput.type = "password";  // Mask the password again
-        icon.src = "/static/images/hide.png";  // Change back to hide icon
+        passwordInput.value = "●●●●●●●●●●●●";
+        passwordInput.type = "password";
+        icon.src = "/static/images/hide.png";
     }
 
     // Toggle the flag
@@ -28,13 +28,13 @@ document.getElementById("togglePasswordView").addEventListener("click", function
 // Function to copy text to clipboard
 function copyToClipboard(targetId) {
     var input = document.getElementById(targetId);
-    var valueToCopy = (targetId === 'passwordInput' && !isPasswordVisible) ? actualPassword : input.value;  // Copy the real password even if hidden
+    var valueToCopy = (targetId === 'passwordInput' && !isPasswordVisible) ? actualPassword : input.value;
 
     // Use modern clipboard API to write text to the clipboard
     navigator.clipboard.writeText(valueToCopy).then(function() {
         alert("Copied to clipboard");
     }).catch(function(error) {
-        console.error("Failed to copy text: ", error);  // Log error if copy fails
+        console.error("Failed to copy text: ", error);
     });
 }
 
