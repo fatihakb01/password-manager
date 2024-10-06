@@ -7,7 +7,9 @@ Werkzeug==3.0.4
 MarkupSafe==2.1.5
 requests==2.31.0
 SQLAlchemy==2.0.25
-
+cryptography==41.0.2
+pywin32==306
+pyperclip==1.8.2
 
 # Bootstrap integration for Flask
 Bootstrap-Flask==2.4.0

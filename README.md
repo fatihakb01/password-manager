@@ -34,7 +34,7 @@ Ensure you have the following installed on your system:
 ### Steps
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/password-manager.git
+    git clone https://github.com/fatihakb01/password-manager.git
     cd password-manager
     ```
 
